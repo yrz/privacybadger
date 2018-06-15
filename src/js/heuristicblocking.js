@@ -120,7 +120,7 @@ HeuristicBlocker.prototype = {
     }
 
     // abort if we already made a decision for this FQDN
-    let action = this.storage.getAction(fqdn);
+    let action = this.storage.getBestAction(fqdn);
     if (action != constants.NO_TRACKING && action != constants.ALLOW) {
       return {};
     }
@@ -144,7 +144,7 @@ HeuristicBlocker.prototype = {
    */
   updateTrackerPrevalence: function(tracker_fqdn, page_origin, skip_dnt_check) {
     // abort if we already made a decision for this fqdn
-    let action = this.storage.getAction(tracker_fqdn);
+    let action = this.storage.getBestAction(tracker_fqdn);
     if (action != constants.NO_TRACKING && action != constants.ALLOW) {
       return;
     }
