@@ -16,6 +16,21 @@
         }
     },
 
+    "Coub Player": {
+        "domain": "coub.com",
+        "buttonSelectors": [
+            "iframe[src^='//coub.com/embed/']"
+        ],
+        "replacementButton": {
+            "details": "",
+            "unblockDomains": [
+                "https://coub.com/"
+            ],
+            "imagePath": "badger-play.png",
+            "type": 3
+        }
+    },
+
     "Digg": {
         "domain": "widgets.digg.com",
         "buttonSelectors": [
