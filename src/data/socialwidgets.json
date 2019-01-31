@@ -69,6 +69,21 @@
         }
     },
 
+    "Facebook Video": {
+        "domain": "www.facebook.com",
+        "buttonSelectors": [
+            "iframe[src^='https://www.facebook.com/plugins/video.php?']"
+        ],
+        "replacementButton": {
+            "details": "",
+            "unblockDomains": [
+                "https://www.facebook.com/"
+            ],
+            "imagePath": "badger-play.png",
+            "type": 3
+        }
+    },
+
     "Google+": {
         "domain": "apis.google.com",
         "buttonSelectors": [
