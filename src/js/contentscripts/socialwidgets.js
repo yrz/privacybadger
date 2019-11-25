@@ -163,7 +163,11 @@ function _createReplacementButtonImageCallback(tracker, trackerElem, callback) {
   // in-place widget type:
   // reinitialize the widget by reinserting its element's HTML
   } else if (buttonType == 3) {
-    let widget = createReplacementWidget(tracker.name, button, trackerElem);
+    let widget = createReplacementWidget(tracker, button, trackerElem, reinitializeWidgetAndUnblockTracker);
+    return callback(widget);
+
+  } else if (buttonType == 4) {
+    let widget = createReplacementWidget(tracker, button, trackerElem, replaceWidgetAndReloadScripts);
     return callback(widget);
   }
 
@@ -237,10 +241,40 @@ function reinitializeWidgetAndUnblockTracker(name) {
   });
 }
 
+function replaceWidgetAndReloadScripts(name) {
+  unblockTracker(name, function () {
+    // restore all widgets of this type
+    WIDGET_ELS[name].forEach(data => {
+      data.parent.replaceChild(data.widget, data.replacement);
+      reloadScripts(data.scriptSelectors);
+    });
+    WIDGET_ELS[name] = [];
+  });
+}
+
+/**
+ * Replace an included script with a copy of itself to trigger a re-run.
+ */
+function reloadScripts(selectors) {
+  let scriptsToReload = document.querySelectorAll(selectors.toString());
+
+  scriptsToReload.forEach(function(scriptToReplace) {
+    let script = document.createElement("script");
+    script.text = scriptToReplace.innerHTML;
+    script.src = scriptToReplace.src;
+    script.src = scriptToReplace.src;
+    for (let i = 0, atts = scriptToReplace.attributes, n = atts.length; i < n; i++) {
+      script.setAttribute(atts[i].nodeName, atts[i].nodeValue);
+    }
+    scriptToReplace.parentNode.replaceChild(script, scriptToReplace);
+  });
+}
+
 /**
  * Dumping scripts into innerHTML won't execute them, so replace them
  * with executable scripts.
  */
+// TODO vs. reloadScripts?
 function replaceScriptsRecurse(node) {
   if (node.nodeName && node.nodeName.toLowerCase() == 'script' &&
       node.getAttribute && node.getAttribute("type") == "text/javascript") {
@@ -289,7 +323,9 @@ function replaceSubsequentTrackerButtonsHelper(trackerDomain) {
   });
 }
 
-function createReplacementWidget(name, icon, elToReplace) {
+function createReplacementWidget(tracker, icon, elToReplace, activationFn) {
+  let name = tracker.name;
+
   let widgetFrame = document.createElement('iframe');
 
   // widget replacement frame styles
@@ -368,17 +404,21 @@ function createReplacementWidget(name, icon, elToReplace) {
   if (!WIDGET_ELS.hasOwnProperty(name)) {
     WIDGET_ELS[name] = [];
   }
-  WIDGET_ELS[name].push({
+  let data = {
     parent: elToReplace.parentNode,
     widget: elToReplace,
     replacement: widgetFrame
-  });
+  };
+  if (tracker.scriptSelectors) {
+    data.scriptSelectors = tracker.scriptSelectors;
+  }
+  WIDGET_ELS[name].push(data);
 
   // set up click handler
   widgetFrame.addEventListener('load', function () {
     let el = widgetFrame.contentDocument.getElementById(button_id);
     el.addEventListener("click", function (e) {
-      reinitializeWidgetAndUnblockTracker(name);
+      activationFn(name);
       e.preventDefault();
     }, { once: true });
   }, false);
