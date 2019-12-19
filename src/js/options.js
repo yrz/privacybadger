@@ -126,6 +126,13 @@ function loadOptions() {
         $("#toggle_webrtc_mode").attr("disabled", false);
       }
 
+      if (result.value.endsWith("public_interface_only") || result.value.endsWith("non_proxied_udp")) {
+        if(!$("#toggle_webrtc_mode").prop("checked")) {
+          $(".i18n_options_webrtc_setting").text("You are already protected against webRTC IP leak, perhaps through a different privacy extension.").css({"font-style": "italic"})
+          $("#toggle_webrtc_mode").attr("disabled")
+        }
+      }
+
       $("#toggle_webrtc_mode").prop(
         "checked", result.value == "disable_non_proxied_udp");
     });
